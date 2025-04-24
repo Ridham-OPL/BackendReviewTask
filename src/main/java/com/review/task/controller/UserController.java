@@ -2,6 +2,7 @@ package com.review.task.controller;
 
 import com.review.task.entity.User;
 import com.review.task.proxy.request.LoginReqProxy;
+import com.review.task.proxy.request.UpdatePassProxy;
 import com.review.task.proxy.request.UserReqProxy;
 import com.review.task.proxy.request.UserUpdateReqProxy;
 import com.review.task.proxy.response.LoginResProxy;
@@ -65,6 +66,17 @@ public class UserController {
     @PostMapping("/{id}")
     public ResponseEntity<Void> uploadProfile(@PathVariable Long id, @RequestParam("profilePic") MultipartFile profile) {
         return userService.uploadProfile(id, profile);
+    }
+
+
+    @GetMapping("/send-link/{username}")
+    public ResponseEntity<Void> sendLink(@PathVariable String username) {
+        return userService.sendLink(username);
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<Void> resetPassword(@RequestBody UpdatePassProxy updatePass) {
+        return userService.resetPassword(updatePass);
     }
 
 }

@@ -2,6 +2,7 @@ package com.review.task.service;
 
 import com.review.task.entity.User;
 import com.review.task.proxy.request.LoginReqProxy;
+import com.review.task.proxy.request.UpdatePassProxy;
 import com.review.task.proxy.request.UserReqProxy;
 import com.review.task.proxy.request.UserUpdateReqProxy;
 import com.review.task.proxy.response.LoginResProxy;
@@ -31,4 +32,8 @@ public interface UserService {
     ResponseEntity<UserResProxy> getUser(String userName);
 
     Page<User> getPaginatedUserWithName(int pageNo, int pageSize, String name);
+
+    ResponseEntity<Void> resetPassword(UpdatePassProxy updatePass);
+
+    ResponseEntity<Void> sendLink(String username);
 }

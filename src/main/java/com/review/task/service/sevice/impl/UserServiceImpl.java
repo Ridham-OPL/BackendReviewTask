@@ -1,19 +1,24 @@
 package com.review.task.service.sevice.impl;
 
 import com.github.javafaker.Faker;
+import com.review.task.entity.ResetPassword;
 import com.review.task.entity.User;
 import com.review.task.enums.Gender;
 import com.review.task.enums.Role;
 import com.review.task.exception.RecordNotFoundException;
 import com.review.task.proxy.request.LoginReqProxy;
+import com.review.task.proxy.request.UpdatePassProxy;
 import com.review.task.proxy.request.UserReqProxy;
 import com.review.task.proxy.request.UserUpdateReqProxy;
 import com.review.task.proxy.response.LoginResProxy;
 import com.review.task.proxy.response.UserResProxy;
+import com.review.task.repository.ResetPasswordRepository;
 import com.review.task.repository.UserRepository;
 import com.review.task.service.UserService;
+import com.review.task.utils.EmailHelper;
 import com.review.task.utils.Helper;
 import com.review.task.utils.JwtUtils;
+import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,6 +60,12 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private AuthenticationManager authenticationManager;
+
+    @Autowired
+    private ResetPasswordRepository resetPasswordRepository;
+
+    @Autowired
+    private EmailHelper emailHelper;;
 
     @Override
     public ResponseEntity<Void> createUser(UserReqProxy userReqProxy) {
@@ -154,6 +165,28 @@ public class UserServiceImpl implements UserService {
         userRepository.saveAll(fakeUsers);
         log.info("{} fake Users are created successfully.", noOfUser);
         return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<Void> resetPassword(UpdatePassProxy updatePass) {
+        ResetPassword resetPassword = resetPasswordRepository.findById(updatePass.getToken()).orElseThrow();
+        if(resetPassword.getExpiryTime() < System.currentTimeMillis()) {
+            resetPasswordRepository.deleteById(updatePass.getToken());
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        User user = userRepository.findByUsername(resetPassword.getUsername()).orElseThrow();
+        user.setPassword(passwordEncoder.encode(updatePass.getPassword()));
+        userRepository.save(user);
+        resetPasswordRepository.deleteById(updatePass.getToken());
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @Override
+    public ResponseEntity<Void> sendLink(String username) {
+        User user = userRepository.findByUsername(username).orElseThrow();
+        emailHelper.sendSimpleEmail("reset Password","Hello", user.getUsername(), user.getUsername());
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     private List<User> generateUsers(int numOfStudents) {

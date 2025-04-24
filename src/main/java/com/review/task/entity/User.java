@@ -25,6 +25,7 @@ public class User {
 
     private String name;
 
+    @Temporal(value = TemporalType.DATE)
     private Date dob;
 
     @Enumerated(EnumType.STRING)
