@@ -16,6 +16,7 @@ import com.review.task.repository.ResetPasswordRepository;
 import com.review.task.repository.UserRepository;
 import com.review.task.service.UserService;
 import com.review.task.utils.EmailHelper;
+import com.review.task.utils.ExcelUtil;
 import com.review.task.utils.Helper;
 import com.review.task.utils.JwtUtils;
 import jakarta.transaction.Transactional;
@@ -25,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -38,6 +40,7 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -65,7 +68,7 @@ public class UserServiceImpl implements UserService {
     private ResetPasswordRepository resetPasswordRepository;
 
     @Autowired
-    private EmailHelper emailHelper;;
+    private EmailHelper emailHelper;
 
     @Override
     public ResponseEntity<Void> createUser(UserReqProxy userReqProxy) {
@@ -188,6 +191,16 @@ public class UserServiceImpl implements UserService {
         emailHelper.sendSimpleEmail("reset Password","Hello", user.getUsername(), user.getUsername());
         return new ResponseEntity<>(HttpStatus.OK);
     }
+
+    @Override
+    public ResponseEntity<byte[]> writeUserToExcel() {
+        List<User> users = userRepository.findAllByAccessRole(Role.USER);
+        String fileName = "users_" + LocalDate.now() + ".xlsx";
+        return ResponseEntity.status(HttpStatus.OK).header(
+                        HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\" " + fileName + "\" ")
+                .body(ExcelUtil.writeUserIntoExcel(users));
+    }
+
 
     private List<User> generateUsers(int numOfStudents) {
         List<User> students = new ArrayList<>();

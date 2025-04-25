@@ -36,4 +36,6 @@ public interface UserService {
     ResponseEntity<Void> resetPassword(UpdatePassProxy updatePass);
 
     ResponseEntity<Void> sendLink(String username);
+
+    ResponseEntity<byte[]> writeUserToExcel();
 }

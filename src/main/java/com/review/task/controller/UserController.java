@@ -79,4 +79,10 @@ public class UserController {
         return userService.resetPassword(updatePass);
     }
 
+    @GetMapping("/download")
+    public ResponseEntity<byte[]> downloadEmployee() {
+        return userService.writeUserToExcel();
+    }
+
+
 }
